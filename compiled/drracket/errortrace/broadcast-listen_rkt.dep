@@ -1,1 +1,0 @@
-("6.9" ("b87b8cdf963dcf404c88279736d5c7ec0aab4abd" . "291b854d0c466f7245d0c532277e6bf0f02634b2") (collects #"comm-panel" #"computer-queues.rkt") (collects #"comm-panel" #"string-sending.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
