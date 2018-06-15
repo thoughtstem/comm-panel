@@ -17,7 +17,8 @@
   (define hidden (new frame%
                       [label "Hidden"]))
   
-  (define cp (comm-panel))
+  (define cp (comm-panel frame))
+  (send cp reparent hidden)
 
   (define listen-button
     (new button% [parent frame]
@@ -40,6 +41,7 @@
          "computer-queues.rkt")
 (require aws/keys)
 (require racket/gui)
+(require wxme)
 
 
 
@@ -65,36 +67,64 @@
 
   ;;EDITOR!!!
   (define editor-canvas (new editor-canvas%
+                             [min-height 300]
                              (parent frame)
                              (label "Editor Canvas")))
   (define text (new text%))
   (send text insert "")
   (send editor-canvas set-editor text)
+  (send text set-max-undo-history 100)
+
+  ;A hidden editor for buffering incoming stuff
+  (define hidden-frame (new frame%
+                                 [label "Hidden"]))
+  
+  (define hidden-editor-canvas (new editor-canvas%
+                                      (parent hidden-frame)
+                                      [min-height 0]
+                                      #;(shown #f)
+                                      (label "Editor Canvas")))
+    (define hidden-text (new text%))
+    (send hidden-text insert "")
+    (send hidden-editor-canvas set-editor hidden-text)
+    (send hidden-text set-max-undo-history 100)
+
+
+
+  
 
   (define mb (new menu-bar% [parent parent]))
   (define m-edit (new menu% [label "Edit"] [parent mb]))
   (define m-font (new menu% [label "Font"] [parent mb]))
   (append-editor-operation-menu-items m-edit #f)
   (append-editor-font-menu-items m-font)
-  (send text set-max-undo-history 100)
+  
 
 
   (define (editor-contents)
-    (define s
-      (send
-       (send editor-canvas get-editor)
-       get-text))
+    (define e (send editor-canvas get-editor))
+    (define s (send e get-text))
     
-    s)
+    (send e save-file (make-temporary-file))
+    (define f (send e get-filename))
+
+    (file->string f))
 
 
+  
   (define (append-editor-contents t)
-    (and t
-         (send
-          (send editor-canvas get-editor)
-          insert
-          (string-append
-           "\n" t))))
+    (define e (send editor-canvas get-editor))
+    (define s (send e get-text))
+    
+    (define temp (make-temporary-file))
+
+    (with-output-to-file temp #:exists 'replace
+      (lambda ()
+        (printf (or t ""))))
+
+    
+    (send hidden-text load-file temp)
+    (send hidden-text copy-self-to e))
 
 
   ;LISTENER BUTTON!!!
@@ -107,9 +137,10 @@
     (set! listener (listen append-editor-contents)))
 
   (define (stop-listening)
-    (displayln (listener))
+    #;(displayln (listener))
     (send broadcaster-button enable #t)
-    (send listen-button set-label "Start listening"))
+    (send listen-button set-label "Start listening")
+    (set! listener #f))
 
   (define listen-button
     (new button% [parent frame]
@@ -126,7 +157,7 @@
   (define broadcaster #f)
 
   (define (start-broadcasting)
-    (displayln (string-append
+    #;(displayln (string-append
                 "Broadcasting..."
                 (editor-contents)))
     (send listen-button enable #f)
@@ -193,8 +224,6 @@
                      (append-editor-contents
                       (receive-string-from
                        (remote-name))))]))
-
-  #;(send frame show #t)
 
   frame
   )
