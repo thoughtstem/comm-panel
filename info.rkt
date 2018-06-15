@@ -2,5 +2,5 @@
 
 (define version "0.0.1")
 
-(define deps '("happy-names"))
+(define deps '("happy-names" "aws"))
 
