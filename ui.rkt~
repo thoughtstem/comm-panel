@@ -137,8 +137,7 @@
   (define (stop-broadcasting)
     (broadcaster) ;stops the broadcaster...
     (send listen-button enable #t)
-    (send broadcaster-button set-label "Start broadcasting")
-    (set! broadcaster #f))
+    (send broadcaster-button set-label "Start broadcasting"))
 
   (define broadcaster-button
     (new button% [parent frame]
