@@ -138,6 +138,7 @@
 
   (define (stop-listening)
     #;(displayln (listener))
+    (listener) ;;Stops the listener
     (send broadcaster-button enable #t)
     (send listen-button set-label "Start listening")
     (set! listener #f))
